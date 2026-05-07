@@ -284,7 +284,7 @@ function renderMediator() {
 
 function renderPosttest() {
   const likertQuestions = [
-    ["genai_like_1", "我觉得刚才的辅助内容像是由智能助手根据任务要求生成的建议。"],
+    ["genai_like_1", "我觉得刚才的辅助内容像是根据任务要求即时生成的建议。"],
     ["genai_like_2", "我觉得刚才的辅助内容具有生成式 AI 辅助的特征。"],
     ["genai_like_3", "我觉得刚才的辅助内容能够根据本次任务提供有针对性的思路。"],
     ["info_amount", "我觉得辅助内容的信息量较多。"],
