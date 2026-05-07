@@ -87,3 +87,24 @@ experiment2-static/supabase-schema.sql
 - 中介题项均值
 - 操控检查题项均值
 - AI 组提示按钮点击日志
+
+## 下载数据到本地
+
+不要把 Supabase 的 `service_role` key 放进 `experiment2-static/config.js`，也不要提交到 GitHub。网页只使用 `anon public key` 插入数据；本地下载数据时才使用 `service_role` key。
+
+1. 复制 `.env.example` 为 `.env`。
+2. 在 `.env` 填入：
+
+```text
+SUPABASE_URL=https://你的项目.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=你的 service_role key
+SUPABASE_TABLE=experiment2_responses
+```
+
+3. 下载数据：
+
+```powershell
+node scripts/download_supabase_experiment2.mjs
+```
+
+脚本会在 `data/` 目录生成一份完整 JSON 和一份扁平 CSV。CSV 可直接用于 Excel、SPSS、R 或 Stata 分析。
