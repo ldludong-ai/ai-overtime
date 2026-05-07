@@ -179,14 +179,13 @@
           <span class="muted">感谢完成</span>
         </div>
         <h1 id="finish-title">感谢你的参与！你的回答已提交。</h1>
-        <div class="notice teacher-only">
-          <p>以下导出按钮用于教师测试和数据备份。正式课堂使用时可在样式中隐藏。</p>
+        <div id="submission-panel" class="submission-panel pending" role="status" aria-live="polite">
+          <h2 id="submission-title">正在提交数据</h2>
+          <p id="submission-message">请不要关闭页面，系统正在保存你的作答记录。</p>
         </div>
-        <div class="button-row teacher-only">
-          <button id="btn-download-json" class="primary" type="button">导出 JSON</button>
-          <button id="btn-download-csv" class="secondary" type="button">导出 CSV</button>
+        <div class="button-row">
+          <button id="btn-retry-submit" class="secondary hidden" type="button">重新提交</button>
         </div>
-        <textarea id="data-preview" class="data-preview teacher-only" readonly></textarea>
       </section>
 
       <section id="screen-decline" class="screen" aria-labelledby="decline-title">
@@ -198,6 +197,7 @@
       </section>
     </main>
 
+    <script src="./config.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>
