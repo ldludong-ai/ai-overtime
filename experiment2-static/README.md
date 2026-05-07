@@ -40,9 +40,42 @@ index.html?condition=control&duration=30&extra=15
 8. 后测题项与目的猜测。
 9. 结束页与测试导出。
 
-## 数据导出
+## 数据自动收集
 
-结束页提供 JSON 和 CSV 导出，包含：
+结束页不再向被试显示 JSON/CSV 导出。页面会在最后一页自动提交作答数据。
+
+当前支持两种提交方式：
+
+1. Supabase：推荐正式实验使用。
+2. Generic endpoint：任意能接收 JSON POST 的 webhook 或后端接口。
+
+配置文件为：
+
+```text
+experiment2-static/config.js
+```
+
+Supabase 配置示例：
+
+```js
+window.EXPERIMENT2_CONFIG = {
+  storageMode: "supabase",
+  genericEndpoint: "",
+  supabaseUrl: "https://你的项目.supabase.co",
+  supabaseAnonKey: "你的 anon public key",
+  supabaseTable: "experiment2_responses"
+};
+```
+
+建表 SQL 见：
+
+```text
+experiment2-static/supabase-schema.sql
+```
+
+如果 `storageMode` 仍为 `none`，页面会在结束页提示“尚未配置自动收集端点”，并把提交数据暂存在当前浏览器的 `localStorage` 中，便于测试排错。
+
+自动提交的数据包含：
 
 - `condition`
 - 前置信息
