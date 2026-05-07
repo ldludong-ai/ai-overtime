@@ -1,6 +1,6 @@
 create table if not exists public.experiment2_responses (
   id bigint generated always as identity primary key,
-  participant_id text not null unique,
+  participant_id text not null,
   condition text not null,
   consent text,
   started_at timestamptz,
@@ -17,6 +17,12 @@ create table if not exists public.experiment2_responses (
   payload jsonb not null,
   submitted_at timestamptz not null default now()
 );
+
+create index if not exists experiment2_responses_participant_id_idx
+on public.experiment2_responses (participant_id);
+
+create index if not exists experiment2_responses_submitted_at_idx
+on public.experiment2_responses (submitted_at);
 
 alter table public.experiment2_responses enable row level security;
 
