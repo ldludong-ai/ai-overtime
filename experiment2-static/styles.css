@@ -480,6 +480,37 @@ textarea {
   font-size: 13px;
 }
 
+.submission-panel {
+  margin: 22px 0;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.submission-panel h2 {
+  margin-bottom: 6px;
+}
+
+.submission-panel.pending {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.submission-panel.success {
+  border-color: #bbf7d0;
+  background: var(--green-soft);
+}
+
+.submission-panel.error {
+  border-color: #fecdd3;
+  background: #fff1f2;
+}
+
+.hidden {
+  display: none !important;
+}
+
 @media (max-width: 900px) {
   .app-shell {
     width: calc(100vw - 12px);
