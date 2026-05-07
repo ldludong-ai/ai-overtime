@@ -1,0 +1,6 @@
+*.sqlite
+*.sqlite-*
+rendered_*/
+**/chrome-profile/
+.DS_Store
+Thumbs.db
