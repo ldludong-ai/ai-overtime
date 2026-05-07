@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderPosttest();
   bindConsent();
   bindNavigation();
-  bindDownloads();
+  bindSubmissionRetry();
 });
 
 function initializePage() {
@@ -426,8 +426,8 @@ function showFinish() {
     text: state.finalText,
     wordCount: countWords(state.finalText)
   });
-  qs("#data-preview").value = JSON.stringify(buildExportData(), null, 2);
   showScreen("finish");
+  submitResponse();
 }
 
 function showScreen(name) {
@@ -455,16 +455,6 @@ function updateProgress(name) {
   });
 }
 
-function bindDownloads() {
-  qs("#btn-download-json").addEventListener("click", () => {
-    downloadText(`experiment2_${state.participantId}.json`, JSON.stringify(buildExportData(), null, 2), "application/json");
-  });
-
-  qs("#btn-download-csv").addEventListener("click", () => {
-    downloadText(`experiment2_${state.participantId}.csv`, toCsv(buildFlatExport()), "text/csv;charset=utf-8");
-  });
-}
-
 function buildExportData() {
   const finalText = state.choseContinue ? qs("#extra-editor").value : state.finalText;
   const draftWordCount = countWords(state.draftText);
@@ -485,6 +475,130 @@ function buildExportData() {
       genai_assistance_check: meanFields(state.posttest, ["genai_like_1", "genai_like_2", "genai_like_3"])
     }
   };
+}
+
+function bindSubmissionRetry() {
+  const retryButton = qs("#btn-retry-submit");
+  if (!retryButton) return;
+  retryButton.addEventListener("click", () => {
+    recordClick("retry_submit");
+    submitResponse();
+  });
+}
+
+async function submitResponse() {
+  const payload = buildExportData();
+  setSubmissionState("pending", "正在提交数据", "请不要关闭页面，系统正在保存你的作答记录。", false);
+  try {
+    await sendResponse(payload);
+    setSubmissionState("success", "提交成功", "你的作答记录已保存。感谢你的参与！", false);
+  } catch (error) {
+    cachePendingSubmission(payload, error);
+    setSubmissionState(
+      "error",
+      "暂未完成自动提交",
+      `${error.message}。本次作答已暂存在当前浏览器中，请联系研究人员或稍后点击“重新提交”。`,
+      true
+    );
+  }
+}
+
+async function sendResponse(payload) {
+  const config = getStorageConfig();
+  if (config.storageMode === "supabase") {
+    return sendToSupabase(config, payload);
+  }
+  if (config.storageMode === "generic") {
+    return sendToGenericEndpoint(config, payload);
+  }
+  throw new Error("尚未配置自动收集端点");
+}
+
+async function sendToGenericEndpoint(config, payload) {
+  if (!config.genericEndpoint) throw new Error("尚未配置 genericEndpoint");
+  const response = await fetch(config.genericEndpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) throw new Error(`数据提交失败：HTTP ${response.status}`);
+}
+
+async function sendToSupabase(config, payload) {
+  if (!config.supabaseUrl || !config.supabaseAnonKey) {
+    throw new Error("尚未配置 Supabase URL 或匿名密钥");
+  }
+  const url = `${config.supabaseUrl.replace(/\/$/, "")}/rest/v1/${config.supabaseTable}`;
+  const row = buildSupabaseRow(payload);
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${config.supabaseAnonKey}`,
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify(row)
+  });
+  if (!response.ok) {
+    const message = await response.text().catch(() => "");
+    throw new Error(`数据提交失败：HTTP ${response.status}${message ? ` ${message}` : ""}`);
+  }
+}
+
+function buildSupabaseRow(payload) {
+  return {
+    participant_id: payload.participantId,
+    condition: payload.condition,
+    consent: payload.consent,
+    started_at: payload.startedAt,
+    finished_at: payload.finishedAt,
+    profile: payload.profile || {},
+    mediator: payload.mediator || {},
+    posttest: payload.posttest || {},
+    metrics: payload.metrics || {},
+    click_log: payload.clickLog || [],
+    assistant_click_log: payload.assistantClickLog || [],
+    text_snapshots: payload.textSnapshots || [],
+    draft_text: payload.draftText || "",
+    final_text: payload.finalText || "",
+    payload
+  };
+}
+
+function getStorageConfig() {
+  return {
+    storageMode: "none",
+    genericEndpoint: "",
+    supabaseUrl: "",
+    supabaseAnonKey: "",
+    supabaseTable: "experiment2_responses",
+    ...(window.EXPERIMENT2_CONFIG || {})
+  };
+}
+
+function setSubmissionState(type, title, message, allowRetry) {
+  const panel = qs("#submission-panel");
+  const titleEl = qs("#submission-title");
+  const messageEl = qs("#submission-message");
+  const retryButton = qs("#btn-retry-submit");
+  if (!panel || !titleEl || !messageEl || !retryButton) return;
+  panel.classList.remove("pending", "success", "error");
+  panel.classList.add(type);
+  titleEl.textContent = title;
+  messageEl.textContent = message;
+  retryButton.classList.toggle("hidden", !allowRetry);
+}
+
+function cachePendingSubmission(payload, error) {
+  const key = "experiment2_pending_submissions";
+  const pending = JSON.parse(window.localStorage.getItem(key) || "[]");
+  pending.push({
+    cachedAt: new Date().toISOString(),
+    error: error.message,
+    payload
+  });
+  window.localStorage.setItem(key, JSON.stringify(pending));
 }
 
 function buildFlatExport() {
@@ -590,28 +704,4 @@ function getCondition() {
 function makeParticipantId() {
   const random = Math.random().toString(36).slice(2, 8).toUpperCase();
   return `E2-${Date.now().toString(36).toUpperCase()}-${random}`;
-}
-
-function downloadText(filename, text, mimeType) {
-  const blob = new Blob([text], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
-function toCsv(row) {
-  const headers = Object.keys(row);
-  const values = headers.map((key) => csvEscape(row[key]));
-  return `${headers.join(",")}\n${values.join(",")}\n`;
-}
-
-function csvEscape(value) {
-  if (value === null || value === undefined) return "";
-  const stringValue = String(value).replace(/"/g, '""');
-  return `"${stringValue}"`;
 }
