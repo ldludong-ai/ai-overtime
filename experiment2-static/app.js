@@ -189,16 +189,16 @@ function supportHtml(condition, phase) {
 function aiSupportHtml(phase) {
   const prefix = `ai-${phase}`;
   return `
-    <h2>智能助手</h2>
-    <p class="support-intro">如果你在写作过程中遇到困难，可以向智能助手请求帮助。智能助手只提供思路提示，最终方案需要你独立完成。</p>
+    <h2>作业支持模块</h2>
+    <p class="support-intro">如果你在写作过程中遇到困难，可以查看以下思路提示。提示内容仅用于帮助理解任务，最终方案需要你独立完成。</p>
     <div class="support-button-list">
-      ${supportButton(prefix, "target", "帮我明确目标参与者")}
+      ${supportButton(prefix, "target", "查看目标参与者提示")}
       ${supportOutput(prefix, "target", "当然可以。你可以先把目标参与者进一步细分，而不是只写“大学生”。例如：宿舍闲置物品较多的学生、关注环保的学生、希望低成本获得物品的新生、喜欢校园活动和社交互动的学生。写作时可以选择其中一类或两类作为方案重点。")}
-      ${supportButton(prefix, "theme", "帮我想一个活动主题")}
+      ${supportButton(prefix, "theme", "查看活动主题提示")}
       ${supportOutput(prefix, "theme", "可以从几个方向展开：环保、交换、校园故事、低成本生活。可参考的主题包括：“让闲置重新流动”“把不用的物品换成新的故事”“低碳校园，从一次交换开始”“旧物新生市集”。你可以选择一个主题，并结合活动目的进行调整。")}
-      ${supportButton(prefix, "channels", "帮我扩展推广方式")}
+      ${supportButton(prefix, "channels", "查看推广方式提示")}
       ${supportOutput(prefix, "channels", "建议采用线上和线下结合的方式。线上路径可以包括校园公众号、班级群、社团群、朋友圈；线下路径可以包括宿舍楼海报、社团联合宣传、摊位预告、旧物展示角。你可以将一种线上方式和一种线下方式组合起来，使推广方案更完整。")}
-      ${supportButton(prefix, "attraction", "帮我增强参与吸引力")}
+      ${supportButton(prefix, "attraction", "查看参与设计提示")}
       ${supportOutput(prefix, "attraction", "可以加入一些降低参与门槛、提高参与意愿的机制。例如：提前预约摊位、交换成功获得纪念贴纸、捐赠物品获得公益证书、设置“最有故事旧物”展示。你可以选择其中一种机制写入方案，并说明它如何吸引同学参与。")}
     </div>
   `;
@@ -296,7 +296,7 @@ function renderPosttest() {
     ${likertQuestions.map(renderLikert).join("")}
     ${selectField("support_identification", "你认为刚才看到的辅助内容更接近哪一种？", [
       ["", "请选择"],
-      ["generated_ai_suggestions", "智能助手根据任务生成的建议"],
+      ["generated_ai_suggestions", "根据任务即时生成的建议"],
       ["course_materials", "普通课程资料或评分提示"],
       ["uncertain", "不确定"]
     ], "full")}
