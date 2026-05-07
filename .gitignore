@@ -2,5 +2,9 @@
 *.sqlite-*
 rendered_*/
 **/chrome-profile/
+.env
+.env.*
+!*.env.example
+data/
 .DS_Store
 Thumbs.db
