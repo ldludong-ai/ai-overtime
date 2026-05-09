@@ -1,4 +1,5 @@
-const MAIN_DURATION_SECONDS = getNumberParam("duration", 12 * 60);
+const DEBUG_TIMING = new URLSearchParams(window.location.search).get("debug") === "1";
+const MAIN_DURATION_SECONDS = getNumberParam("duration", 15 * 60);
 const EXTRA_DURATION_SECONDS = getNumberParam("extra", 5 * 60);
 
 const state = {
@@ -18,6 +19,7 @@ const state = {
   draftText: "",
   mediator: {},
   mediatorSubmittedAt: null,
+  choiceDecision: null,
   choseContinue: null,
   choiceAt: null,
   extraStartedAt: null,
@@ -34,7 +36,7 @@ const state = {
 };
 
 const screens = ["consent", "profile", "task", "writing", "mediator", "choice", "extra", "posttest", "finish", "decline"];
-const progressSteps = ["consent", "profile", "task", "writing", "mediator", "choice", "posttest"];
+const progressSteps = ["consent", "profile", "task", "writing", "choice", "mediator", "posttest"];
 const qs = (selector) => document.querySelector(selector);
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -92,7 +94,7 @@ function bindNavigation() {
   });
 
   qs("#btn-finish-writing").addEventListener("click", () => {
-    const confirmed = window.confirm("确认完成正式作业并进入课堂练习体验评价吗？");
+    const confirmed = window.confirm("确认完成正式作业并进入提交选择吗？");
     if (!confirmed) return;
     recordClick("finish_writing_early");
     finishMainWriting(true);
@@ -102,25 +104,29 @@ function bindNavigation() {
     if (!collectForm("#mediator-form", state.mediator)) return;
     state.mediatorSubmittedAt = new Date().toISOString();
     recordClick("mediator_submit");
-    showScreen("choice");
-  });
-
-  qs("#btn-submit-now").addEventListener("click", () => {
-    state.choseContinue = false;
-    state.choiceAt = new Date().toISOString();
-    state.finalText = state.draftText;
-    state.extraTimeSeconds = 0;
-    state.revisionSubmittedEarly = null;
-    recordClick("submit_now");
+    if (state.choseContinue) {
+      showScreen("extra");
+      startExtraWriting();
+      return;
+    }
     showScreen("posttest");
   });
 
-  qs("#btn-continue").addEventListener("click", () => {
-    state.choseContinue = true;
+  qs("#btn-choice-submit").addEventListener("click", () => {
+    const form = qs("#choice-form");
+    if (!form.reportValidity()) return;
+    const data = new FormData(form);
+    const selected = data.get("choice_decision");
+    state.choiceDecision = selected;
+    state.choseContinue = selected === "continue";
     state.choiceAt = new Date().toISOString();
-    recordClick("choose_continue");
-    showScreen("extra");
-    startExtraWriting();
+    if (!state.choseContinue) {
+      state.finalText = state.draftText;
+      state.extraTimeSeconds = 0;
+      state.revisionSubmittedEarly = null;
+    }
+    recordClick(state.choseContinue ? "choose_continue" : "submit_now");
+    showScreen("mediator");
   });
 
   qs("#btn-finish-extra").addEventListener("click", () => {
@@ -183,33 +189,80 @@ function renderSupportPanels() {
 
 function supportHtml(condition, phase) {
   if (condition === "ai") return aiSupportHtml(phase);
-  return controlSupportHtml();
+  return controlSupportHtml(phase);
 }
 
 function aiSupportHtml(phase) {
   const prefix = `ai-${phase}`;
+  if (phase === "extra") return aiRevisionSupportHtml(prefix);
   return `
-    <h2>作业支持模块</h2>
-    <p class="support-intro">如果你在写作过程中遇到困难，可以查看以下思路提示。提示内容仅用于帮助理解任务，最终方案需要你独立完成。</p>
+    <h2>智能助手</h2>
+    <p class="support-intro">如果你在写作过程中遇到困难，可以向智能助手请求帮助。智能助手只提供思路提示，最终方案需要你独立完成。</p>
     <div class="support-button-list">
-      ${supportButton(prefix, "target", "查看目标参与者提示")}
+      ${supportButton(prefix, "target", "帮我明确目标参与者")}
       ${supportOutput(prefix, "target", "当然可以。你可以先把目标参与者进一步细分，而不是只写“大学生”。例如：宿舍闲置物品较多的学生、关注环保的学生、希望低成本获得物品的新生、喜欢校园活动和社交互动的学生。写作时可以选择其中一类或两类作为方案重点。")}
-      ${supportButton(prefix, "theme", "查看活动主题提示")}
+      ${supportButton(prefix, "theme", "帮我想一个活动主题")}
       ${supportOutput(prefix, "theme", "可以从几个方向展开：环保、交换、校园故事、低成本生活。可参考的主题包括：“让闲置重新流动”“把不用的物品换成新的故事”“低碳校园，从一次交换开始”“旧物新生市集”。你可以选择一个主题，并结合活动目的进行调整。")}
-      ${supportButton(prefix, "channels", "查看推广方式提示")}
+      ${supportButton(prefix, "channels", "帮我扩展推广方式")}
       ${supportOutput(prefix, "channels", "建议采用线上和线下结合的方式。线上路径可以包括校园公众号、班级群、社团群、朋友圈；线下路径可以包括宿舍楼海报、社团联合宣传、摊位预告、旧物展示角。你可以将一种线上方式和一种线下方式组合起来，使推广方案更完整。")}
-      ${supportButton(prefix, "attraction", "查看参与设计提示")}
+      ${supportButton(prefix, "attraction", "帮我增强参与吸引力")}
       ${supportOutput(prefix, "attraction", "可以加入一些降低参与门槛、提高参与意愿的机制。例如：提前预约摊位、交换成功获得纪念贴纸、捐赠物品获得公益证书、设置“最有故事旧物”展示。你可以选择其中一种机制写入方案，并说明它如何吸引同学参与。")}
+      ${supportButton(prefix, "improve", "帮我检查还有哪些地方可以完善")}
+      ${supportOutput(prefix, "improve", "你可以检查方案是否已经具体说明了推广渠道、触达对象和参与机制。如果某一部分仍然比较概括，可以进一步补充执行方式、时间安排或吸引同学参与的理由。")}
+      ${supportButton(prefix, "creative-polish", "帮我优化表达和创意")}
+      ${supportOutput(prefix, "creative-polish", "可以尝试让主题、推广方式和参与机制之间形成更清楚的联系。例如先突出“旧物重新流动”的主题，再说明线上预热、线下展示和交换奖励如何共同吸引同学参与。")}
     </div>
   `;
 }
 
-function controlSupportHtml() {
+function aiRevisionSupportHtml(prefix) {
+  return `
+    <h2>智能助手</h2>
+    <p class="support-intro">你已经完成初稿。现在可以围绕完整性、具体性和表达清晰度继续自查和完善。</p>
+    <div class="support-button-list">
+      ${supportButton(prefix, "structure", "帮我检查结构是否完整")}
+      ${supportOutput(prefix, "structure", "可以先检查四个要求是否都已经出现：目标参与者、活动主题或核心创意、两项具体推广方式、一项提高参与意愿的设计。如果某一部分只是简单提到，可以补一句说明它为什么适合本次旧物交换与环保市集。")}
+      ${supportButton(prefix, "specificity", "帮我把推广方式写具体")}
+      ${supportOutput(prefix, "specificity", "可以把推广方式从“线上宣传、线下宣传”改得更可执行。例如写清楚使用校园公众号、班级群、宿舍楼海报或社团摊位预告，并补充发布时间、触达对象或现场呈现方式。")}
+      ${supportButton(prefix, "participation", "帮我优化参与机制")}
+      ${supportOutput(prefix, "participation", "可以检查参与机制是否真的降低门槛。比如说明如何预约摊位、如何提醒同学提前整理物品、交换或捐赠后能获得什么反馈，让同学更容易从“知道活动”转向“愿意参加”。")}
+      ${supportButton(prefix, "polish", "帮我润色整体表达")}
+      ${supportOutput(prefix, "polish", "可以把方案整理成更清楚的顺序：先写面向谁，再写主题，再写推广方式，最后写参与机制。检查句子是否有重复、是否过于笼统，并把关键行动写得更直接。")}
+    </div>
+  `;
+}
+
+function controlSupportHtml(phase) {
+  if (phase === "extra") {
+    const revisionRows = [
+      ["结构完整性", "自查方案是否包含目标参与者、活动主题或核心创意、两项具体推广方式、一项提高参与意愿的设计。缺少的部分可以补充一两句。"],
+      ["推广方式具体性", "检查推广方式是否写清楚渠道、对象或执行方式。例如校园公众号、班级群、宿舍楼海报、社团摊位预告等可以写得更具体。"],
+      ["参与机制可行性", "检查参与机制是否能降低参与门槛，例如预约摊位、提前整理提醒、交换纪念贴纸、公益证书或旧物故事展示。"],
+      ["表达清晰度", "检查段落顺序是否清楚、句子是否重复、核心创意和行动安排是否容易理解。"]
+    ];
+    return `
+      <h2>自查与完善清单</h2>
+      <p class="support-intro">你已经完成初稿。继续完善时，可参考以下检查点。</p>
+      ${revisionRows
+        .map(
+          ([title, body]) => `
+          <div class="support-block">
+            <h3>${title}</h3>
+            <p>${body}</p>
+          </div>
+        `
+        )
+        .join("")}
+    `;
+  }
+
   const rows = [
     ["目标参与者", "目标参与者可以进一步细分，不宜只写“大学生”。例如，宿舍闲置物品较多的学生、关注环保的学生、希望低成本获得物品的新生、喜欢校园活动和社交互动的学生，均可作为方案重点。"],
     ["活动主题或核心创意", "活动主题可以围绕环保、交换、校园故事、低成本生活等方向展开。可参考的主题包括：“让闲置重新流动”“把不用的物品换成新的故事”“低碳校园，从一次交换开始”“旧物新生市集”。"],
     ["推广方式", "推广方式可采用线上和线下结合。线上路径包括校园公众号、班级群、社团群、朋友圈；线下路径包括宿舍楼海报、社团联合宣传、摊位预告、旧物展示角。"],
-    ["提高参与意愿的设计", "参与机制应降低参与门槛并提高参与意愿。可参考的设计包括：提前预约摊位、交换成功获得纪念贴纸、捐赠物品获得公益证书、设置“最有故事旧物”展示。"]
+    ["提高参与意愿的设计", "参与机制应降低参与门槛并提高参与意愿。可参考的设计包括：提前预约摊位、交换成功获得纪念贴纸、捐赠物品获得公益证书、设置“最有故事旧物”展示。"],
+    ["完善检查", "完成初稿后，可以检查方案是否已经具体说明推广渠道、触达对象和参与机制。如果某一部分仍然比较概括，可以进一步补充执行方式、时间安排或吸引同学参与的理由。"],
+    ["表达和创意优化", "可以让主题、推广方式和参与机制之间形成更清楚的联系。例如先突出“旧物重新流动”的主题，再说明线上预热、线下展示和交换奖励如何共同吸引同学参与。"]
   ];
   return `
     <h2>作业提示与示例</h2>
@@ -257,54 +310,6 @@ function bindSupportButtons() {
       recordClick(`support_${id}_${entry.action}`);
     });
   });
-}
-
-function renderMediator() {
-  const wdi = [
-    ["wdi_1", "在完成这项推广方案时，我感到任务还可以继续扩展。"],
-    ["wdi_2", "我感到这项任务还有很多细节可以进一步补充。"],
-    ["wdi_3", "我感到这项任务可以做得比基本要求更完整。"],
-    ["wdi_4", "我感到如果继续投入时间，方案质量还可以明显提高。"],
-    ["wdi_5", "我感到辅助内容让我意识到更多需要处理的内容。"]
-  ];
-  const tc = [
-    ["tc_1", "我感到自己能够控制完成这项任务的节奏。"],
-    ["tc_2", "我感到自己能够判断这项任务什么时候可以停止。"],
-    ["tc_3", "我感到自己能够合理安排这项任务的时间投入。"],
-    ["tc_4", "我感到自己可以决定是否把额外时间用于继续修改。"],
-    ["tc_5", "我感到辅助内容帮助我更快形成思路，从而更能掌控任务进度。"]
-  ];
-  qs("#mediator-form").innerHTML = `
-    <div class="subsection-title">任务体验</div>
-    ${wdi.map(renderLikert).join("")}
-    <div class="subsection-title">时间安排体验</div>
-    ${tc.map(renderLikert).join("")}
-  `;
-}
-
-function renderPosttest() {
-  const likertQuestions = [
-    ["genai_like_1", "我觉得刚才的辅助内容像是围绕本次任务临时生成的建议。"],
-    ["genai_like_2", "我觉得刚才的辅助内容具有生成式 AI 辅助的特征。"],
-    ["genai_like_3", "我觉得刚才的辅助内容能够根据本次任务提供有针对性的思路。"],
-    ["info_amount", "我觉得辅助内容的信息量较多。"],
-    ["support_clarity", "我觉得辅助内容表达清楚。"],
-    ["task_difficulty", "我觉得这项任务难度适中。"]
-  ];
-
-  qs("#posttest-form").innerHTML = `
-    ${likertQuestions.map(renderLikert).join("")}
-    ${selectField("support_identification", "你认为刚才看到的辅助内容更接近哪一种？", [
-      ["", "请选择"],
-      ["generated_ai_suggestions", "根据任务即时生成的建议"],
-      ["course_materials", "普通课程资料或评分提示"],
-      ["uncertain", "不确定"]
-    ], "full")}
-    <div class="field-row full">
-      <label for="purpose_guess">你认为本次课堂练习主要想了解什么？</label>
-      <textarea id="purpose_guess" name="purpose_guess" required></textarea>
-    </div>
-  `;
 }
 
 function renderLikert([name, title]) {
@@ -379,7 +384,7 @@ function finishMainWriting(finishedEarly) {
     text: state.draftText,
     wordCount: countWords(state.draftText)
   });
-  showScreen("mediator");
+  showScreen("choice");
 }
 
 function startExtraWriting() {
@@ -442,7 +447,7 @@ function showScreen(name) {
 
 function updateProgress(name) {
   const mappedName = {
-    extra: "choice",
+    extra: "mediator",
     finish: "posttest",
     decline: "consent"
   }[name] || name;
@@ -453,28 +458,6 @@ function updateProgress(name) {
     step.classList.toggle("active", stepName === mappedName);
     step.classList.toggle("done", currentIndex >= 0 && stepIndex >= 0 && stepIndex < currentIndex);
   });
-}
-
-function buildExportData() {
-  const finalText = state.choseContinue ? qs("#extra-editor").value : state.finalText;
-  const draftWordCount = countWords(state.draftText);
-  const finalWordCount = countWords(finalText);
-  return {
-    ...state,
-    finalText,
-    metrics: {
-      draftWordCount,
-      finalWordCount,
-      addedWordCount: finalWordCount - draftWordCount,
-      textLengthChange: finalText.length - state.draftText.length,
-      mainTaskTimeSeconds: state.mainTaskTimeSeconds,
-      extraTimeSeconds: state.extraTimeSeconds,
-      assistantClickCount: state.assistantClickLog.length,
-      work_demand_intensification: meanFields(state.mediator, ["wdi_1", "wdi_2", "wdi_3", "wdi_4", "wdi_5"]),
-      time_control: meanFields(state.mediator, ["tc_1", "tc_2", "tc_3", "tc_4", "tc_5"]),
-      genai_assistance_check: meanFields(state.posttest, ["genai_like_1", "genai_like_2", "genai_like_3"])
-    }
-  };
 }
 
 function bindSubmissionRetry() {
@@ -612,6 +595,7 @@ function buildFlatExport() {
     writingStartedAt: exported.writingStartedAt,
     writingEndedAt: exported.writingEndedAt,
     finishedEarly: exported.finishedEarly,
+    choiceDecision: exported.choiceDecision,
     choseContinue: exported.choseContinue,
     choiceAt: exported.choiceAt,
     extraStartedAt: exported.extraStartedAt,
@@ -689,6 +673,7 @@ function secondsBetween(startIso, endIso) {
 }
 
 function getNumberParam(name, fallback) {
+  if (!DEBUG_TIMING) return fallback;
   const params = new URLSearchParams(window.location.search);
   const value = Number(params.get(name));
   return Number.isFinite(value) && value > 0 ? value : fallback;
@@ -704,4 +689,86 @@ function getCondition() {
 function makeParticipantId() {
   const random = Math.random().toString(36).slice(2, 8).toUpperCase();
   return `E2-${Date.now().toString(36).toUpperCase()}-${random}`;
+}
+
+// Absorption-version measures for this copied static build.
+function renderMediator() {
+  const demandItems = [
+    ["wdi_1", "为了完成本次任务，我感到需要在有限时间内处理较多内容。"],
+    ["wdi_2", "本次任务需要我同时兼顾多个方面，例如目标参与者、活动主题、推广方式和参与机制。"],
+    ["wdi_3", "我感到需要自己规划这份方案的写作思路和完成步骤。"],
+    ["wdi_4", "我感到需要自己判断这份方案是否已经达到任务要求。"],
+    ["wdi_5", "我感到需要根据页面中的辅助内容调整或更新自己的写作思路。"],
+    ["wdi_6", "我感到本次任务需要投入较多思考、整理和检查。"]
+  ];
+  const absorptionItems = [
+    ["task_absorption_1", "在本次任务中，我完全专注于手头的任务，没有任何分心。"],
+    ["task_absorption_2", "在本次任务中，我感到自己的行动与意识融为一体。"],
+    ["task_absorption_3", "在本次任务中，我对时间流逝的感觉与平时不同。"],
+    ["task_absorption_4", "在本次任务中，我发现这个体验本身非常有价值且令人愉悦。"]
+  ];
+
+  qs("#mediator-form").innerHTML = `
+    <div class="subsection-title">任务要求体验</div>
+    ${demandItems.map(renderLikert).join("")}
+    <div class="subsection-title">任务吸收体验</div>
+    ${absorptionItems.map(renderLikert).join("")}
+  `;
+}
+
+function renderPosttest() {
+  const likertQuestions = [
+    ["genai_like_1", "我觉得刚才的辅助内容像是由智能助手根据任务要求生成的建议。"],
+    ["genai_like_2", "我觉得刚才的辅助内容具有生成式 AI 辅助的特征。"],
+    ["material_relevance", "页面提供的辅助内容与本次任务相关。"],
+    ["material_clarity", "页面提供的辅助内容容易理解。"],
+    ["page_operation_clarity", "本次任务页面的操作比较清楚。"]
+  ];
+
+  qs("#posttest-form").innerHTML = `
+    ${likertQuestions.map(renderLikert).join("")}
+    ${selectField("support_identification", "你认为刚才看到的辅助内容更接近哪一种？", [
+      ["", "请选择"],
+      ["generated_ai_suggestions", "智能助手根据任务生成的建议"],
+      ["course_materials", "普通课程资料或评分提示"],
+      ["uncertain", "不确定"]
+    ], "full")}
+  `;
+}
+
+function buildExportData() {
+  const finalText = state.choseContinue ? qs("#extra-editor").value : state.finalText;
+  const draftWordCount = countWords(state.draftText);
+  const finalWordCount = countWords(finalText);
+  return {
+    ...state,
+    finalText,
+    experimentVersion: "experiment2_absorption_extension_2026_05_09",
+    metrics: {
+      draftWordCount,
+      finalWordCount,
+      addedWordCount: finalWordCount - draftWordCount,
+      textLengthChange: finalText.length - state.draftText.length,
+      mainTaskTimeSeconds: state.mainTaskTimeSeconds,
+      extraTimeSeconds: state.extraTimeSeconds,
+      assistantClickCount: state.assistantClickLog.length,
+      work_demand_intensification: meanFields(state.mediator, [
+        "wdi_1",
+        "wdi_2",
+        "wdi_3",
+        "wdi_4",
+        "wdi_5",
+        "wdi_6"
+      ]),
+      task_absorption: meanFields(state.mediator, [
+        "task_absorption_1",
+        "task_absorption_2",
+        "task_absorption_3",
+        "task_absorption_4"
+      ]),
+      genai_assistance_check: meanFields(state.posttest, ["genai_like_1", "genai_like_2"]),
+      material_equivalence: meanFields(state.posttest, ["material_relevance", "material_clarity"]),
+      page_experience: meanFields(state.posttest, ["page_operation_clarity"])
+    }
+  };
 }

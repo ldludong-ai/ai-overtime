@@ -437,8 +437,10 @@ textarea {
 }
 
 .likert-row label {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 40px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -447,14 +449,22 @@ textarea {
 }
 
 .likert-row input {
-  position: absolute;
-  opacity: 0;
+  position: static;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  opacity: 1;
+  accent-color: var(--blue);
 }
 
 .likert-row label:has(input:checked) {
   color: #fff;
   border-color: var(--blue);
   background: var(--blue);
+}
+
+.likert-row label:has(input:checked) input {
+  accent-color: #fff;
 }
 
 .scale-note {
