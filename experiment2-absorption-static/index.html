@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>校园活动推广方案课堂练习</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <nav class="progress-strip" aria-label="练习进度">
+        <span data-step="consent" class="active">说明</span>
+        <span data-step="profile">信息</span>
+        <span data-step="task">材料</span>
+        <span data-step="writing">写作</span>
+        <span data-step="choice">提交</span>
+        <span data-step="mediator">体验</span>
+        <span data-step="posttest">反馈</span>
+      </nav>
+
+      <section id="screen-consent" class="screen active" aria-labelledby="consent-title">
+        <div class="topline">
+          <span class="badge">课堂作业平台</span>
+          <span id="participant-label" class="muted"></span>
+        </div>
+        <h1 id="consent-title">校园活动推广方案课堂练习</h1>
+        <p class="lead">
+          你好！本次任务是一项在线课堂练习。你将阅读一段校园活动材料，并完成一份简短的校园活动推广方案。
+        </p>
+        <div class="notice">
+          <p>页面中会提供一个作业支持模块，帮助你理解和完成任务。请根据页面材料独立完成，不与他人讨论，也不要使用本页面之外的资料或工具。</p>
+          <p>你的回答将匿名处理，仅用于课堂练习材料和页面流程改进，不会影响任何课程成绩或个人评价。</p>
+        </div>
+        <div class="choice-list" role="radiogroup" aria-labelledby="consent-title">
+          <label class="option-row">
+            <input type="radio" name="consent" value="yes" />
+            <span>是，我同意参加</span>
+          </label>
+          <label class="option-row">
+            <input type="radio" name="consent" value="no" />
+            <span>否，我不同意参加</span>
+          </label>
+        </div>
+        <div class="button-row">
+          <button id="btn-consent" class="primary" type="button" disabled>继续</button>
+        </div>
+      </section>
+
+      <section id="screen-profile" class="screen" aria-labelledby="profile-title">
+        <div class="topline">
+          <span class="badge">前置信息</span>
+          <span class="muted">请按实际情况作答</span>
+        </div>
+        <h1 id="profile-title">开始前，请填写以下信息</h1>
+        <form id="profile-form" class="form-grid"></form>
+        <div class="button-row">
+          <button id="btn-profile-next" class="primary" type="button">进入材料页</button>
+        </div>
+      </section>
+
+      <section id="screen-task" class="screen" aria-labelledby="task-title">
+        <div class="topline">
+          <span class="badge">作业材料</span>
+          <span id="condition-label" class="muted"></span>
+        </div>
+        <h1 id="task-title">校园社团活动推广方案</h1>
+        <div class="split-layout">
+          <article class="material-panel">
+            <h2>共同材料</h2>
+            <p>
+              学校某公益社团计划在下个月举办一次“旧物交换与环保市集”活动。活动希望鼓励学生把闲置书籍、文具、小家电、衣物等带到现场交换或捐赠，减少浪费，也帮助同学获得需要的物品。活动地点计划设在大学生活动中心广场，时间为周六下午。
+            </p>
+            <p>
+              目前社团成员担心活动知晓度不高、参与人数不足，也担心同学觉得旧物交换麻烦、不愿意提前准备物品。社团希望设计一份校园推广方案，吸引更多学生了解、报名并参与活动。
+            </p>
+          </article>
+          <aside class="requirements-panel">
+            <h2>作业要求</h2>
+            <ul>
+              <li>正式写作时间为 <strong id="main-duration-label">15 分钟</strong>。</li>
+              <li>建议字数为 300-450 字。</li>
+              <li>方案应包括：目标参与者、一个活动主题或核心创意、两项具体推广方式、一项提高参与意愿的设计。</li>
+              <li>只要四个部分均有作答，即视为完成基本任务。</li>
+            </ul>
+          </aside>
+        </div>
+        <div class="button-row">
+          <button id="btn-task-next" class="primary" type="button">开始正式作业</button>
+        </div>
+      </section>
+
+      <section id="screen-writing" class="screen writing-screen" aria-labelledby="writing-title">
+        <div class="topline fixed-topline">
+          <span class="badge">正式作业</span>
+          <span id="timer-main" class="timer">12:00</span>
+        </div>
+        <h1 id="writing-title">请完成校园活动推广方案</h1>
+        <p class="compact-hint">请在下方输入你的推广方案。达到基本要求后，可以提前点击“完成正式作业”。</p>
+        <div class="writing-layout">
+          <aside id="support-sidebar" class="support-sidebar" aria-label="作业支持模块"></aside>
+          <div class="editor-wrap">
+            <label for="report-editor">校园活动推广方案正文</label>
+            <div class="structure-note">请包括：目标参与者、活动主题或核心创意、两项具体推广方式、一项提高参与意愿的设计。</div>
+            <textarea id="report-editor" spellcheck="false" placeholder="请在这里输入你的校园活动推广方案..."></textarea>
+            <div class="editor-meta">
+              <span id="word-count">0 字</span>
+              <span id="save-status">正在记录作答过程</span>
+              <button id="btn-finish-writing" class="small-button" type="button">完成正式作业</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-mediator" class="screen" aria-labelledby="mediator-title">
+        <div class="topline">
+          <span class="badge">课堂练习体验评价</span>
+          <span class="muted">请根据刚才的真实感受作答</span>
+        </div>
+        <h1 id="mediator-title">请评价刚才的任务体验</h1>
+        <p class="lead">以下题项均为 1-7 分，1 = 非常不同意，7 = 非常同意。</p>
+        <form id="mediator-form"></form>
+        <div class="button-row">
+          <button id="btn-mediator-next" class="primary" type="button">继续</button>
+        </div>
+      </section>
+
+      <section id="screen-choice" class="screen" aria-labelledby="choice-title">
+        <div class="topline">
+          <span class="badge">提交选择</span>
+          <span class="muted">是否继续完善由你决定</span>
+        </div>
+        <h1 id="choice-title">你现在希望如何处理这份方案？</h1>
+        <form id="choice-form">
+          <div class="choice-list">
+            <label class="option-row" for="choice-submit-now">
+              <input id="choice-submit-now" type="radio" name="choice_decision" value="submit_now" required />
+              <span>直接提交</span>
+            </label>
+            <label class="option-row" for="choice-continue">
+              <input id="choice-continue" type="radio" name="choice_decision" value="continue" required />
+              <span>继续完善</span>
+            </label>
+          </div>
+          <div class="button-row">
+            <button id="btn-choice-submit" class="primary" type="button">提交选择</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="screen-extra" class="screen writing-screen" aria-labelledby="extra-title">
+        <div class="topline fixed-topline">
+          <span class="badge">继续完善方案</span>
+          <span id="timer-extra" class="timer">05:00</span>
+        </div>
+        <h1 id="extra-title">你可以继续自查和完善方案</h1>
+        <p class="compact-hint">继续完善最多 5 分钟。你也可以提前提交。</p>
+        <div class="writing-layout">
+          <aside id="extra-sidebar" class="support-sidebar" aria-label="作业支持模块"></aside>
+          <div class="editor-wrap">
+            <label for="extra-editor">校园活动推广方案正文</label>
+            <textarea id="extra-editor" spellcheck="false"></textarea>
+            <div class="editor-meta">
+              <span id="extra-word-count">0 字</span>
+              <button id="btn-finish-extra" class="small-button" type="button">提交方案</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-posttest" class="screen" aria-labelledby="posttest-title">
+        <div class="topline">
+          <span class="badge">课堂作业材料评价</span>
+          <span class="muted">最后一组题项</span>
+        </div>
+        <h1 id="posttest-title">请评价刚才看到和使用的作业材料</h1>
+        <p class="lead">以下题项均为 1-7 分，1 = 非常不同意，7 = 非常同意。</p>
+        <form id="posttest-form"></form>
+        <div class="button-row">
+          <button id="btn-posttest-submit" class="primary" type="button">提交反馈</button>
+        </div>
+      </section>
+
+      <section id="screen-finish" class="screen" aria-labelledby="finish-title">
+        <div class="topline">
+          <span class="badge">作业已提交</span>
+          <span class="muted">感谢完成</span>
+        </div>
+        <h1 id="finish-title">感谢你的参与！你的回答已提交。</h1>
+        <div id="submission-panel" class="submission-panel pending" role="status" aria-live="polite">
+          <h2 id="submission-title">正在提交数据</h2>
+          <p id="submission-message">请不要关闭页面，系统正在保存你的作答记录。</p>
+        </div>
+        <div class="button-row">
+          <button id="btn-retry-submit" class="secondary hidden" type="button">重新提交</button>
+        </div>
+      </section>
+
+      <section id="screen-decline" class="screen" aria-labelledby="decline-title">
+        <div class="topline">
+          <span class="badge">已退出</span>
+        </div>
+        <h1 id="decline-title">你已选择不参加本次课堂练习</h1>
+        <p class="lead">页面将不会继续记录作答内容。感谢你的阅读。</p>
+      </section>
+    </main>
+
+    <script src="./config.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

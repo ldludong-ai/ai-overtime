@@ -4,7 +4,7 @@ import path from "node:path";
 const env = loadEnv(path.resolve(".env"));
 const SUPABASE_URL = getConfig("SUPABASE_URL", env);
 const SERVICE_ROLE_KEY = getConfig("SUPABASE_SERVICE_ROLE_KEY", env);
-const TABLE = getConfig("SUPABASE_TABLE", env) || "experiment2_responses";
+const TABLE = getConfig("SUPABASE_TABLE", env) || "experiment2_absorption_responses";
 const OUT_DIR = getArg("--out") || "data";
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
@@ -15,8 +15,9 @@ const rows = await fetchAllRows();
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-const jsonPath = path.join(OUT_DIR, `experiment2_responses_${stamp}.json`);
-const csvPath = path.join(OUT_DIR, `experiment2_responses_${stamp}.csv`);
+const safeTable = TABLE.replace(/[^a-z0-9_]/gi, "_");
+const jsonPath = path.join(OUT_DIR, `${safeTable}_${stamp}.json`);
+const csvPath = path.join(OUT_DIR, `${safeTable}_${stamp}.csv`);
 
 fs.writeFileSync(jsonPath, JSON.stringify(rows, null, 2), "utf8");
 fs.writeFileSync(csvPath, toCsv(rows.map(flattenRow)), "utf8");
@@ -72,22 +73,33 @@ function flattenRow(row) {
     grade: profile.grade,
     genai_ever_used: profile.genai_ever_used,
     genai_use_frequency: profile.genai_use_frequency,
+    choice_decision: payload.choiceDecision,
+    chose_continue: payload.choseContinue,
+    choice_at: payload.choiceAt,
     wdi_1: mediator.wdi_1,
     wdi_2: mediator.wdi_2,
     wdi_3: mediator.wdi_3,
     wdi_4: mediator.wdi_4,
     wdi_5: mediator.wdi_5,
+    wdi_6: mediator.wdi_6,
     tc_1: mediator.tc_1,
     tc_2: mediator.tc_2,
     tc_3: mediator.tc_3,
     tc_4: mediator.tc_4,
     tc_5: mediator.tc_5,
+    task_absorption_1: mediator.task_absorption_1,
+    task_absorption_2: mediator.task_absorption_2,
+    task_absorption_3: mediator.task_absorption_3,
+    task_absorption_4: mediator.task_absorption_4,
     genai_like_1: posttest.genai_like_1,
     genai_like_2: posttest.genai_like_2,
     genai_like_3: posttest.genai_like_3,
     info_amount: posttest.info_amount,
     support_clarity: posttest.support_clarity,
     task_difficulty: posttest.task_difficulty,
+    material_relevance: posttest.material_relevance,
+    material_clarity: posttest.material_clarity,
+    page_operation_clarity: posttest.page_operation_clarity,
     support_identification: posttest.support_identification,
     purpose_guess: posttest.purpose_guess,
     draft_word_count: metrics.draftWordCount,
@@ -99,8 +111,11 @@ function flattenRow(row) {
     assistant_click_count: metrics.assistantClickCount,
     work_demand_intensification: metrics.work_demand_intensification,
     time_control: metrics.time_control,
+    task_time_control: metrics.task_time_control,
+    task_absorption: metrics.task_absorption,
     genai_assistance_check: metrics.genai_assistance_check,
-    chose_continue: payload.choseContinue,
+    material_equivalence: metrics.material_equivalence,
+    page_experience: metrics.page_experience,
     finished_early: payload.finishedEarly,
     revision_submitted_early: payload.revisionSubmittedEarly,
     draft_text: row.draft_text || payload.draftText,
