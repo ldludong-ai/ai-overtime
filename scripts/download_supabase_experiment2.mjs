@@ -4,7 +4,7 @@ import path from "node:path";
 const env = loadEnv(path.resolve(".env"));
 const SUPABASE_URL = getConfig("SUPABASE_URL", env);
 const SERVICE_ROLE_KEY = getConfig("SUPABASE_SERVICE_ROLE_KEY", env);
-const TABLE = getConfig("SUPABASE_TABLE", env) || "experiment2_absorption_responses";
+const TABLE = getConfig("SUPABASE_TABLE", env) || "experiment2_responses";
 const OUT_DIR = getArg("--out") || "data";
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
