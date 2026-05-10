@@ -294,11 +294,16 @@ function supportOutput(prefix, key, text) {
 
 function bindSupportButtons() {
   document.querySelectorAll("[data-support]").forEach((button) => {
+    button.setAttribute("aria-expanded", "false");
     button.addEventListener("click", () => {
       const id = button.getAttribute("data-support");
       const output = qs(`#${id}`);
+      if (!output) return;
       output.classList.toggle("show");
       const isOpen = output.classList.contains("show");
+      button.classList.toggle("is-open", isOpen);
+      button.setAttribute("aria-expanded", String(isOpen));
+      if (isOpen) output.scrollIntoView({ behavior: "smooth", block: "nearest" });
       const entry = {
         id,
         label: button.textContent.trim(),

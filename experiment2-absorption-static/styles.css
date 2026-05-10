@@ -375,6 +375,11 @@ textarea:focus {
   background: var(--blue-soft);
 }
 
+.support-button.is-open {
+  border-color: var(--blue);
+  background: #dbeafe;
+}
+
 .support-output {
   display: none;
   margin-top: 8px;
