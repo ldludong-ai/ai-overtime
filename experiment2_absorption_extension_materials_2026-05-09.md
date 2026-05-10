@@ -80,7 +80,7 @@
    - 感知工作要求强化；
    - 任务吸收感。
 9. 若选择继续完善，进入最多 5 分钟继续完善阶段；若选择直接提交，进入后测。
-10. 后测：生成式 AI 辅助感、材料理解性、辅助内容识别、页面体验。
+10. 后测：生成式 AI 辅助感、材料理解性、辅助内容识别、页面操作清晰度。
 11. 结束。
 
 说明：提交选择应先于所有过程体验题项记录，以避免题项中“继续投入”“额外时间”“任务要求”“沉浸”等表述影响参与者是否继续完善的选择。
@@ -511,21 +511,19 @@
 
 - `material_equivalence` = `material_clarity` 单题得分。
 
-### 4. 页面体验
+### 4. 页面操作清晰度
 
 变量名前缀：
 
-- `page_experience_`
+- `page_operation_clarity`
 
 题项：
 
 1. 本次任务页面的操作比较清楚。
-2. 本次任务的说明容易理解。
-3. 我知道应该如何完成这份推广方案。
 
 计分：
 
-- `page_experience` = 3 个题项均值。
+- `page_experience` = `page_operation_clarity` 单题得分。
 
 ## 十六、主要变量汇总
 
@@ -551,7 +549,7 @@
 - `genai_assistance_check`：生成式 AI 辅助感。
 - `assistance_identification`：辅助内容识别。
 - `material_equivalence`：材料理解性检查。
-- `page_experience`：页面体验。
+- `page_experience`：页面操作清晰度。
 - `genai_ever_used`：是否使用过生成式 AI。
 - `genai_use_frequency`：生成式 AI 使用频率。
 - `major`：专业。
