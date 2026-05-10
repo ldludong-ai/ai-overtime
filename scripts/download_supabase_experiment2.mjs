@@ -20,7 +20,7 @@ const jsonPath = path.join(OUT_DIR, `${safeTable}_${stamp}.json`);
 const csvPath = path.join(OUT_DIR, `${safeTable}_${stamp}.csv`);
 
 fs.writeFileSync(jsonPath, JSON.stringify(rows, null, 2), "utf8");
-fs.writeFileSync(csvPath, toCsv(rows.map(flattenRow)), "utf8");
+fs.writeFileSync(csvPath, `\uFEFF${toCsv(rows.map(flattenRow))}`, "utf8");
 
 console.log(`Downloaded ${rows.length} rows`);
 console.log(`JSON: ${jsonPath}`);
