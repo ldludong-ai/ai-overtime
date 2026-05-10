@@ -535,6 +535,56 @@ textarea {
   background: #fff1f2;
 }
 
+.credit-panel {
+  margin-top: 20px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.credit-panel p {
+  color: var(--muted);
+}
+
+.credit-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+  max-width: 520px;
+}
+
+.credit-form label {
+  grid-column: 1 / -1;
+  font-weight: 800;
+}
+
+.credit-form input {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.credit-message {
+  margin-top: 10px;
+  font-weight: 700;
+}
+
+.credit-message.success {
+  color: #047857;
+}
+
+.credit-message.error {
+  color: var(--rose);
+}
+
+.credit-message.pending {
+  color: var(--muted);
+}
+
 .hidden {
   display: none !important;
 }
@@ -578,9 +628,14 @@ textarea {
   }
 
   .editor-meta,
+  .credit-form,
   .topline {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .credit-form {
+    grid-template-columns: 1fr;
   }
 
   .likert-row {

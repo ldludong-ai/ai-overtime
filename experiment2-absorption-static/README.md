@@ -39,6 +39,7 @@ index.html?debug=1&condition=control&duration=30&extra=15
 7. 若继续完善，进入最多 5 分钟修改阶段。
 8. 后测题项：AI 辅助操控检验、材料理解性检查、页面操作清晰度、辅助内容识别。
 9. 结束页与自动提交。
+10. 可选学分登记：单独填写学号，保存到 `experiment2_credit_records`，不进入实验分析数据。
 
 ## 数据表
 
@@ -97,3 +98,16 @@ experiment2-absorption-static/config.js
 ```
 
 正式收数前，请确认 Supabase 中已创建 `experiment2_responses` 表，或先执行 `supabase-schema.sql` 并将 `config.js` 改为对应独立表名。
+
+如需学分登记，请同时确认 Supabase 中已创建 `experiment2_credit_records` 表，并启用匿名插入策略。
+可在 Supabase SQL Editor 执行：
+
+```text
+experiment2-absorption-static/credit-schema.sql
+```
+
+下载学号登记表：
+
+```powershell
+node scripts/download_credit_records.mjs
+```

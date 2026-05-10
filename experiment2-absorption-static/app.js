@@ -48,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
   bindConsent();
   bindNavigation();
   bindSubmissionRetry();
+  bindCreditSubmission();
 });
 
 function initializePage() {
@@ -474,6 +475,12 @@ function bindSubmissionRetry() {
   });
 }
 
+function bindCreditSubmission() {
+  const button = qs("#btn-credit-submit");
+  if (!button) return;
+  button.addEventListener("click", submitCreditRecord);
+}
+
 async function submitResponse() {
   const payload = buildExportData();
   setSubmissionState("pending", "正在提交数据", "请不要关闭页面，系统正在保存你的作答记录。", false);
@@ -534,6 +541,66 @@ async function sendToSupabase(config, payload) {
   }
 }
 
+async function submitCreditRecord() {
+  const input = qs("#student-id");
+  const messageEl = qs("#credit-message");
+  const button = qs("#btn-credit-submit");
+  const studentId = input.value.trim();
+  if (!studentId) {
+    messageEl.textContent = "请填写学号。";
+    messageEl.className = "credit-message error";
+    input.focus();
+    return;
+  }
+  if (!state.finishedAt) {
+    messageEl.textContent = "请先完成实验作答提交。";
+    messageEl.className = "credit-message error";
+    return;
+  }
+
+  button.disabled = true;
+  messageEl.textContent = "正在提交学号...";
+  messageEl.className = "credit-message pending";
+  try {
+    await sendCreditRecord(studentId);
+    messageEl.textContent = "学号已提交，感谢参与。";
+    messageEl.className = "credit-message success";
+    input.disabled = true;
+  } catch (error) {
+    messageEl.textContent = `${error.message}。请稍后重试或联系研究人员。`;
+    messageEl.className = "credit-message error";
+    button.disabled = false;
+  }
+}
+
+async function sendCreditRecord(studentId) {
+  const config = getStorageConfig();
+  if (config.storageMode !== "supabase") throw new Error("尚未配置学号登记端点");
+  if (!config.supabaseUrl || !config.supabaseAnonKey) throw new Error("尚未配置 Supabase URL 或匿名密钥");
+  const table = config.creditTable || "experiment2_credit_records";
+  const url = `${config.supabaseUrl.replace(/\/$/, "")}/rest/v1/${table}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${config.supabaseAnonKey}`,
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify({
+      participant_id: state.participantId,
+      student_id: studentId,
+      condition: state.condition,
+      finished_at: state.finishedAt,
+      experiment_version: "experiment2_absorption_extension_2026_05_09"
+    })
+  });
+  if (!response.ok) {
+    const message = await response.text().catch(() => "");
+    throw new Error(`学号提交失败：HTTP ${response.status}${message ? ` ${message}` : ""}`);
+  }
+}
+
 function buildSupabaseRow(payload) {
   return {
     participant_id: payload.participantId,
@@ -561,6 +628,7 @@ function getStorageConfig() {
     supabaseUrl: "",
     supabaseAnonKey: "",
     supabaseTable: "experiment2_responses",
+    creditTable: "experiment2_credit_records",
     ...(window.EXPERIMENT2_CONFIG || {})
   };
 }

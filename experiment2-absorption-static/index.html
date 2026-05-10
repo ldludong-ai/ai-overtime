@@ -205,6 +205,16 @@
         <div class="button-row">
           <button id="btn-retry-submit" class="secondary hidden" type="button">重新提交</button>
         </div>
+        <div class="credit-panel">
+          <h2>学分登记</h2>
+          <p>如需记录课堂参与学分，请填写学号。学号仅用于学分核对，不进入实验分析数据。</p>
+          <div class="credit-form">
+            <label for="student-id">学号</label>
+            <input id="student-id" name="student_id" type="text" inputmode="numeric" autocomplete="off" />
+            <button id="btn-credit-submit" class="primary" type="button">提交学号</button>
+          </div>
+          <p id="credit-message" class="credit-message" role="status" aria-live="polite"></p>
+        </div>
       </section>
 
       <section id="screen-decline" class="screen" aria-labelledby="decline-title">
