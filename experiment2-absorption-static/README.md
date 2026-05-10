@@ -37,7 +37,7 @@ index.html?debug=1&condition=control&duration=30&extra=15
 5. 提交选择：直接提交或继续完善。
 6. 选择后体验评价：感知工作要求强化、任务吸收感。
 7. 若继续完善，进入最多 5 分钟修改阶段。
-8. 后测题项：AI 辅助操控检验、材料等价性、页面体验、辅助内容识别。
+8. 后测题项：AI 辅助操控检验、材料理解性检查、页面体验、辅助内容识别。
 9. 结束页与自动提交。
 
 ## 数据表
@@ -65,7 +65,7 @@ experiment2-absorption-static/supabase-schema.sql
 - `work_demand_intensification`
 - `task_absorption`
 - `genai_assistance_check`
-- `material_equivalence`
+- `material_equivalence`（材料理解性检查）
 - `page_experience`
 - AI 组提示按钮点击日志
 

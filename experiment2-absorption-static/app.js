@@ -702,10 +702,10 @@ function renderMediator() {
     ["wdi_6", "我感到本次任务需要投入较多思考、整理和检查。"]
   ];
   const absorptionItems = [
-    ["task_absorption_1", "在本次任务中，我完全专注于手头的任务，没有任何分心。"],
-    ["task_absorption_2", "在本次任务中，我感到自己的行动与意识融为一体。"],
+    ["task_absorption_1", "在本次任务中，我完全专注于手头的任务。"],
+    ["task_absorption_2", "在本次任务中，我感到自己身心合一。"],
     ["task_absorption_3", "在本次任务中，我对时间流逝的感觉与平时不同。"],
-    ["task_absorption_4", "在本次任务中，我发现这个体验本身非常有价值且令人愉悦。"]
+    ["task_absorption_4", "在本次任务中，我发现这个体验本身非常有价值。"]
   ];
 
   qs("#mediator-form").innerHTML = `
@@ -720,7 +720,6 @@ function renderPosttest() {
   const likertQuestions = [
     ["genai_like_1", "我觉得刚才的辅助内容像是由智能助手根据任务要求生成的建议。"],
     ["genai_like_2", "我觉得刚才的辅助内容具有生成式 AI 辅助的特征。"],
-    ["material_relevance", "页面提供的辅助内容与本次任务相关。"],
     ["material_clarity", "页面提供的辅助内容容易理解。"],
     ["page_operation_clarity", "本次任务页面的操作比较清楚。"]
   ];
@@ -767,7 +766,7 @@ function buildExportData() {
         "task_absorption_4"
       ]),
       genai_assistance_check: meanFields(state.posttest, ["genai_like_1", "genai_like_2"]),
-      material_equivalence: meanFields(state.posttest, ["material_relevance", "material_clarity"]),
+      material_equivalence: meanFields(state.posttest, ["material_clarity"]),
       page_experience: meanFields(state.posttest, ["page_operation_clarity"])
     }
   };

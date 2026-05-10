@@ -190,6 +190,19 @@ label,
   padding: 18px 20px;
 }
 
+.writing-material-panel {
+  padding: 14px 16px;
+}
+
+.writing-material-panel h2 {
+  font-size: 17px;
+}
+
+.material-requirement {
+  margin-bottom: 0;
+  font-weight: 700;
+}
+
 .requirements-panel ul,
 .support-sidebar ul {
   margin: 0;
